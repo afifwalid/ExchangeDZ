@@ -31,7 +31,7 @@
 </head>
 <body>
   <h1>سعر صرف الدينار الجزائري</h1>
-  <p>تحديث يومي لأسعار الصرف مقابل العملات العالمية</p>
+  <p id="daily-update">تحديث يومي لأسعار الصرف مقابل العملات العالمية</p>
   <table>
     <thead>
       <tr>
@@ -49,6 +49,15 @@
   <script>
     const apiKey = "77bb9418398375a9494d3ac2"; // ضع مفتاح API الخاص بك هنا
     const apiURL = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/DZD`;
+
+    // إضافة التاريخ اليومي
+    function updateDailyText() {
+      const today = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = today.toLocaleDateString('ar-EG', options);
+      document.getElementById("daily-update").textContent = 
+        `تحديث يومي لأسعار الصرف ليوم ${formattedDate}`;
+    }
 
     async function fetchExchangeRates() {
       try {
@@ -84,6 +93,8 @@
       }
     }
 
+    // تحديث النص بالتاريخ وعرض أسعار الصرف
+    updateDailyText();
     fetchExchangeRates();
   </script>
 </body>
