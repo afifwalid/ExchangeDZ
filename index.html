@@ -27,6 +27,18 @@
     td {
       background-color: #fff;
     }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -46,6 +58,10 @@
       </tr>
     </tbody>
   </table>
+
+  <!-- زر المشاركة -->
+  <button id="share-btn">شارك البيانات</button>
+
   <script>
     const apiKey = "77bb9418398375a9494d3ac2"; // ضع مفتاح API الخاص بك هنا
     const apiURL = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/DZD`;
@@ -93,9 +109,26 @@
       }
     }
 
+    // خاصية المشاركة
+    document.getElementById("share-btn").addEventListener("click", () => {
+      const shareData = {
+        title: 'سعر صرف الدينار الجزائري',
+        text: 'تعرف على أحدث أسعار صرف الدينار الجزائري مقابل العملات العالمية.',
+        url: window.location.href // عنوان الصفحة الحالي
+      };
+
+      if (navigator.share) {
+        navigator.share(shareData)
+          .then(() => console.log("تمت المشاركة بنجاح"))
+          .catch(error => console.error("حدث خطأ أثناء المشاركة:", error));
+      } else {
+        alert("خاصية المشاركة غير مدعومة على هذا الجهاز.");
+      }
+    });
+
     // تحديث النص بالتاريخ وعرض أسعار الصرف
     updateDailyText();
     fetchExchangeRates();
   </script>
 </body>
-</html>
+</html>>
