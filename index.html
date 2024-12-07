@@ -4,51 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>سعر صرف الدينار الجزائري</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f4f4f4;
+      background: linear-gradient(to right, #f4f4f4, #eaeaea);
       margin: 20px;
     }
     table {
-      margin: 0 auto;
+      margin: 20px auto;
       border-collapse: collapse;
       width: 80%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
     th, td {
       border: 1px solid #ddd;
-      padding: 8px;
+      padding: 10px;
     }
     th {
       background-color: #4CAF50;
       color: white;
+      font-size: 16px;
+      font-weight: bold;
+      text-transform: uppercase;
     }
     td {
+      background-color: #f9f9f9;
+      font-size: 14px;
+      color: #555;
+    }
+    #current-date {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+    .language-selector select {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
       background-color: #fff;
     }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #4CAF50;
+    .social-share-buttons a {
+      margin: 10px;
+      padding: 15px;
+      font-size: 18px;
+      border-radius: 50%;
+      display: inline-block;
       color: white;
-      border: none;
-      cursor: pointer;
+      transition: transform 0.3s ease, background-color 0.3s ease;
     }
-    button:hover {
-      background-color: #45a049;
+    .social-share-buttons a:hover {
+      transform: scale(1.2);
     }
+    .facebook { background-color: #3b5998; }
+    .whatsapp { background-color: #25d366; }
+    .telegram { background-color: #0088cc; }
+    .messenger { background-color: #0078ff; }
   </style>
 </head>
 <body>
-  <h1>سعر صرف الدينار الجزائري</h1>
-  <p id="daily-update">تحديث يومي لأسعار الصرف مقابل العملات العالمية</p>
+
+  <h1 id="page-title">سعر صرف الدينار الجزائري</h1>
+
+  <div id="current-date"></div>
+
+  <div class="language-selector">
+    <label for="language-select" id="language-label">اختر اللغة:</label>
+    <select id="language-select">
+      <option value="ar">العربية</option>
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+    </select>
+  </div>
+
   <table>
     <thead>
       <tr>
-        <th>العملة</th>
-        <th>سعر الصرف</th>
+        <th id="currency-header">العملة</th>
+        <th id="exchange-rate-header">سعر الصرف</th>
       </tr>
     </thead>
     <tbody id="exchange-rates">
@@ -59,76 +95,141 @@
     </tbody>
   </table>
 
-  <!-- زر المشاركة -->
-  <button id="share-btn">شارك البيانات</button>
+  <div class="share-button">
+    <p id="share-text">شارك هذه الصفحة عبر:</p>
+    <div class="social-share-buttons">
+      <a href="#" id="facebook-share" class="facebook" target="_blank">
+        <i class="fab fa-facebook-f"></i>
+      </a>
+      <a href="#" id="messenger-share" class="messenger" target="_blank">
+        <i class="fab fa-facebook-messenger"></i>
+      </a>
+      <a href="#" id="whatsapp-share" class="whatsapp" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+      <a href="#" id="telegram-share" class="telegram" target="_blank">
+        <i class="fab fa-telegram-plane"></i>
+      </a>
+    </div>
+  </div>
 
   <script>
     const apiKey = "77bb9418398375a9494d3ac2"; // ضع مفتاح API الخاص بك هنا
     const apiURL = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/DZD`;
 
-    // إضافة التاريخ اليومي
-    function updateDailyText() {
-      const today = new Date();
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      const formattedDate = today.toLocaleDateString('ar-EG', options);
-      document.getElementById("daily-update").textContent = 
-        `تحديث يومي لأسعار الصرف ليوم ${formattedDate}`;
+    // إرجاع النصوص المترجمة
+    function getText(language) {
+      const text = {
+        ar: {
+          pageTitle: "سعر صرف الدينار الجزائري",
+          currencyHeader: "العملة",
+          exchangeRateHeader: "سعر الصرف",
+          shareText: "شارك هذه الصفحة عبر:",
+          languageLabel: "اختر اللغة:",
+          dateText: "تاريخ اليوم"
+        },
+        en: {
+          pageTitle: "Algerian Dinar Exchange Rate",
+          currencyHeader: "Currency",
+          exchangeRateHeader: "Exchange Rate",
+          shareText: "Share this page via:",
+          languageLabel: "Choose Language:",
+          dateText: "Today's Date"
+        },
+        zh: {
+          pageTitle: "阿尔及利亚第纳尔汇率",
+          currencyHeader: "货币",
+          exchangeRateHeader: "汇率",
+          shareText: "通过以下方式分享此页面:",
+          languageLabel: "选择语言:",
+          dateText: "今天的日期"
+        }
+      };
+      return text[language];
     }
 
-    async function fetchExchangeRates() {
+    // تحديث النصوص
+    function updateLanguage(language) {
+      const text = getText(language);
+      document.getElementById("page-title").textContent = text.pageTitle;
+      document.getElementById("currency-header").textContent = text.currencyHeader;
+      document.getElementById("exchange-rate-header").textContent = text.exchangeRateHeader;
+      document.getElementById("share-text").textContent = text.shareText;
+      document.getElementById("language-label").textContent = text.languageLabel;
+      displayCurrentDate(language);
+      fetchExchangeRates(language);
+    }
+
+    // عرض التاريخ
+    function displayCurrentDate(language) {
+      const date = new Date();
+      const options = { year: "numeric", month: "long", day: "numeric" };
+      document.getElementById("current-date").textContent = getText(language).dateText + ": " + date.toLocaleDateString(language);
+    }
+
+    // جلب بيانات الصرف
+    async function fetchExchangeRates(language) {
       try {
         const response = await fetch(apiURL);
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+
         const data = await response.json();
 
-        const rates = data.conversion_rates; // أسعار الصرف
+        if (!data.conversion_rates) {
+          throw new Error("لم يتم العثور على البيانات");
+        }
+
+        const rates = data.conversion_rates;
         const tableBody = document.getElementById("exchange-rates");
+        tableBody.innerHTML = "";
 
-        tableBody.innerHTML = ""; // تفريغ الجدول
-
-        // عرض أسعار العملات
-        const currencies = ["USD", "EUR", "GBP", "JPY", "CNY"]; // العملات المراد عرضها
-        currencies.forEach(currency => {
-          const rate = rates[currency];
-          if (rate) {
-            const row = `
-              <tr>
-                <td>${currency}</td>
-                <td>${(1 / rate).toFixed(2)} دينار</td>
-              </tr>
-            `;
-            tableBody.innerHTML += row;
-          }
+        const currencies = ["USD", "EUR", "GBP", "CNY"];
+        currencies.forEach((currency) => {
+          const row = `
+            <tr>
+              <td>${currency}</td>
+              <td>${(1 / rates[currency]).toFixed(2)}</td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
         });
+
+        updateShareLinks(language, rates);
       } catch (error) {
-        console.error("Error fetching exchange rates:", error);
+        console.error("خطأ:", error);
         document.getElementById("exchange-rates").innerHTML = `
           <tr>
-            <td colspan="2">حدث خطأ أثناء تحميل البيانات.</td>
+            <td colspan="2">فشل تحميل البيانات. يرجى المحاولة لاحقًا.</td>
           </tr>
         `;
       }
     }
 
-    // خاصية المشاركة
-    document.getElementById("share-btn").addEventListener("click", () => {
-      const shareData = {
-        title: 'سعر صرف الدينار الجزائري',
-        text: 'تعرف على أحدث أسعار صرف الدينار الجزائري مقابل العملات العالمية.',
-        url: window.location.href // عنوان الصفحة الحالي
-      };
+    // تحديث روابط المشاركة
+    function updateShareLinks(language, rates) {
+      const shareText = Object.entries(rates).map(([currency, rate]) => `${currency}: ${(1 / rate).toFixed(2)}`).join('\n');
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`;
+      const messengerUrl = `https://www.messenger.com/t/?link=${encodeURIComponent(window.location.href)}`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(shareText)}`;
 
-      if (navigator.share) {
-        navigator.share(shareData)
-          .then(() => console.log("تمت المشاركة بنجاح"))
-          .catch(error => console.error("حدث خطأ أثناء المشاركة:", error));
-      } else {
-        alert("خاصية المشاركة غير مدعومة على هذا الجهاز.");
-      }
+      document.getElementById("facebook-share").setAttribute("href", facebookUrl);
+      document.getElementById("messenger-share").setAttribute("href", messengerUrl);
+      document.getElementById("whatsapp-share").setAttribute("href", whatsappUrl);
+      document.getElementById("telegram-share").setAttribute("href", telegramUrl);
+    }
+
+    // بدء التهيئة
+    document.getElementById("language-select").addEventListener("change", (e) => {
+      updateLanguage(e.target.value);
     });
 
-    // تحديث النص بالتاريخ وعرض أسعار الصرف
-    updateDailyText();
-    fetchExchangeRates();
+    window.onload = () => {
+      updateLanguage("ar");
+    };
   </script>
 </body>
-</html>>
+</html>
